@@ -28,8 +28,7 @@
 ### Backend (รอการพัฒนา)
 - **Supabase** - Database & Authentication
 - **API Routes** - Next.js API
+- **Cloud** - Cloudinary
 
 
 ---
-
-Made with ❤️ and ☕
