@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
+import DeleteConfirmModal from '../DeleteConfirmModal/DeleteConfirmModal'; 
 
 export default function TransactionTable() {
-  const { filteredTransactions, deleteTransaction } = useTransactions();
+  const { filteredTransactions } = useTransactions();
 
   return (
     <>
@@ -70,12 +71,7 @@ export default function TransactionTable() {
                     {transaction.type === 'income' ? '+' : '-'}฿{transaction.amount.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => deleteTransaction(transaction.id)}
-                      className="!cursor-pointer px-3 py-1.5 bg-rose-100 text-rose-600 rounded-lg text-sm font-medium hover:bg-rose-200 transition-colors"
-                    >
-                      ลบ
-                    </button>
+                    <DeleteConfirmModal rowID={transaction.id} />
                   </td>
                 </tr>
               ))
@@ -129,12 +125,7 @@ export default function TransactionTable() {
                   }`}>
                     {transaction.type === 'income' ? '+' : '-'}฿{transaction.amount.toLocaleString()}
                   </div>
-                  <button
-                    onClick={() => deleteTransaction(transaction.id)}
-                    className="cursor-pointer px-3 py-1 bg-rose-100 text-rose-600 rounded-lg text-xs font-medium hover:bg-rose-200 transition-colors"
-                  >
-                    ลบ
-                  </button>
+                  <DeleteConfirmModal rowID={transaction.id} />
                 </div>
               </div>
             </div>

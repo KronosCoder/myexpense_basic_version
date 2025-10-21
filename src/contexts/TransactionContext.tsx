@@ -17,7 +17,7 @@ interface TransactionContextType {
   setSelectedMonth: (month: string) => void;
   filteredTransactions: Transaction[];
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-  deleteTransaction: (id: string) => void;
+  deleteTransaction: (id: string) => boolean;
   totalIncome: number;
   totalExpense: number;
   balance: number;
@@ -26,6 +26,7 @@ interface TransactionContextType {
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
+  // mock data
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: '1',
@@ -77,8 +78,18 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     setTransactions([newTransaction, ...transactions]);
   };
 
+  const isExistingTransaction = (id: string) => {
+    // console.log(id)
+    return filteredTransactions.some(t => t.id === id);
+  }
+
   const deleteTransaction = (id: string) => {
+    const isExisting: boolean = isExistingTransaction(id);
+    console.log(isExisting)
+    if (!isExisting) return false;
+
     setTransactions(transactions.filter(t => t.id !== id));
+    return true;
   };
 
   return (
@@ -102,8 +113,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
 export function useTransactions() {
   const context = useContext(TransactionContext);
-  if (context === undefined) {
-    throw new Error('useTransactions must be used within a TransactionProvider');
-  }
+  if (context === undefined) throw new Error('useTransactions must be used within a TransactionProvider');
   return context;
 }

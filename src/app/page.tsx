@@ -7,6 +7,7 @@ import SummaryCards from '@/components/SummaryCards/SummaryCards';
 import MonthSelector from '@/components/MonthSelector/MonthSelector';
 import TransactionTable from '@/components/TransactionTable/TransactionTable';
 import TransactionModal from '@/components/Transaction/TransactionModal';
+import RootLayout from '../layouts/RootLayout/RootLayout';
 
 function HomeContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,7 +18,7 @@ function HomeContent() {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-0">
-            บันทึกรายรับรายจ่าย
+            MyExpense
           </h1>
           <p className="text-slate-600 text-sm sm:text-base">
             จัดการการเงินของคุณอย่างมีประสิทธิภาพ
@@ -61,8 +62,10 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <TransactionProvider>
-      <HomeContent />
-    </TransactionProvider>
+    <RootLayout>
+      <TransactionProvider>
+        <HomeContent />
+      </TransactionProvider>
+    </RootLayout>
   );
 }
