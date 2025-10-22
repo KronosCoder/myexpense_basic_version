@@ -26,7 +26,7 @@ interface TransactionContextType {
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
-  // mock data
+  // mock data~
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: '1',
@@ -77,17 +77,10 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     };
     setTransactions([newTransaction, ...transactions]);
   };
-
-  const isExistingTransaction = (id: string) => {
-    // console.log(id)
-    return filteredTransactions.some(t => t.id === id);
-  }
-
+  const isExistingTransaction = (id: string) => filteredTransactions.some(t => t.id === id);
   const deleteTransaction = (id: string) => {
     const isExisting: boolean = isExistingTransaction(id);
-    console.log(isExisting)
     if (!isExisting) return false;
-
     setTransactions(transactions.filter(t => t.id !== id));
     return true;
   };

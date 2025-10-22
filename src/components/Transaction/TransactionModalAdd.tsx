@@ -15,7 +15,7 @@ interface TransactionModalProps {
 
 type FormErrors = Record<string, string>;
 
-export default function TransactionModal({ isOpen, onClose }: TransactionModalProps) {
+export default function TransactionAddModal({ isOpen, onClose }: TransactionModalProps) {
   const toastModal = useRef<Toast | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const { addTransaction } = useTransactions();

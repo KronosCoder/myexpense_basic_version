@@ -6,7 +6,7 @@ import { TransactionProvider } from '@/contexts/TransactionContext';
 import SummaryCards from '@/components/SummaryCards/SummaryCards';
 import MonthSelector from '@/components/MonthSelector/MonthSelector';
 import TransactionTable from '@/components/TransactionTable/TransactionTable';
-import TransactionModal from '@/components/Transaction/TransactionModal';
+import TransactionAddModal from '@/components/Transaction/TransactionEditModal';
 import RootLayout from '../layouts/RootLayout/RootLayout';
 
 function HomeContent() {
@@ -52,7 +52,7 @@ function HomeContent() {
       </div>
 
       {/* Modal */}
-      <TransactionModal 
+      <TransactionAddModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
       />

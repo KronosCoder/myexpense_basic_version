@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
-import DeleteConfirmModal from '../DeleteConfirmModal/DeleteConfirmModal'; 
+import DeleteButton from '../DeleteButton/DeleteButton'; 
+import EditButton from '../EditButton/EditButton';
 
 export default function TransactionTable() {
   const { filteredTransactions } = useTransactions();
@@ -70,8 +71,9 @@ export default function TransactionTable() {
                   }`}>
                     {transaction.type === 'income' ? '+' : '-'}฿{transaction.amount.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <DeleteConfirmModal rowID={transaction.id} />
+                  <td className="px-6 py-4 text-center flex gap-1 justify-center">
+                    <DeleteButton rowID={transaction.id} />
+                    <EditButton rowID={transaction.id } />
                   </td>
                 </tr>
               ))
@@ -125,7 +127,11 @@ export default function TransactionTable() {
                   }`}>
                     {transaction.type === 'income' ? '+' : '-'}฿{transaction.amount.toLocaleString()}
                   </div>
-                  <DeleteConfirmModal rowID={transaction.id} />
+
+                  <div className="flex gap-2 items-center">
+                    <EditButton rowID={transaction.id} />
+                    <DeleteButton rowID={transaction.id} />
+                  </div>
                 </div>
               </div>
             </div>
