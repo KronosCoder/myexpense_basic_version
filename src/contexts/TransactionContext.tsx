@@ -21,6 +21,7 @@ interface TransactionContextType {
   totalIncome: number;
   totalExpense: number;
   balance: number;
+  getSingleTransaction: (id: string) => Transaction[];
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -55,6 +56,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   ]);
 
   const [selectedMonth, setSelectedMonth] = useState('2025-10');
+  const [currentEditTransaction, setEditTransaction] = useState<Transaction | null>(null);
 
   const filteredTransactions = transactions.filter(t => 
     t.date.startsWith(selectedMonth)
@@ -69,6 +71,11 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const balance = totalIncome - totalExpense;
+
+  const getSingleTransaction = (id: string) => {
+    const data = transactions.filter(t => t.id === id);
+    return data;
+  } 
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     const newTransaction: Transaction = {
@@ -96,7 +103,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         deleteTransaction,
         totalIncome,
         totalExpense,
-        balance
+        balance,
+        getSingleTransaction,
       }}
     >
       {children}

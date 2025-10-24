@@ -6,7 +6,7 @@ import { TransactionProvider } from '@/contexts/TransactionContext';
 import SummaryCards from '@/components/SummaryCards/SummaryCards';
 import MonthSelector from '@/components/MonthSelector/MonthSelector';
 import TransactionTable from '@/components/TransactionTable/TransactionTable';
-import TransactionAddModal from '@/components/Transaction/TransactionEditModal';
+import TransactionAddModal from '@/components/Transaction/TransactionAddModal';
 import RootLayout from '../layouts/RootLayout/RootLayout';
 
 function HomeContent() {

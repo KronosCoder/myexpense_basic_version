@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useRef } from 'react';
@@ -11,14 +11,15 @@ import { ChevronDown } from 'lucide-react';
 interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  transactionID: string;
 }
 
 type FormErrors = Record<string, string>;
 
-export default function TransactionEditModal({ isOpen, onClose }: TransactionModalProps) {
+export default function TransactionEditModal({ isOpen, onClose, transactionID }: TransactionModalProps) {
   const toastModal = useRef<Toast | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const { addTransaction } = useTransactions();
+  const { addTransaction, getSingleTransaction } = useTransactions();
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
     category: '',
@@ -26,8 +27,32 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
     description: '',
     date: new Date().toISOString().split('T')[0]
   });
+
+  const resetForm = () => setFormData({
+    type: 'expense' as 'income' | 'expense',
+    category: '',
+    amount: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  useEffect(() => {
+    if (isOpen && transactionID) {
+      const transaction = getSingleTransaction(transactionID);
+      const { type, category, amount, description, date } = transaction[0];
+      setFormData({
+        type,
+        category,
+        amount: amount.toString(),
+        description,
+        date
+      })
+    } else if (isOpen) {
+      resetForm();
+    }
+  },[isOpen, transactionID, getSingleTransaction]);
+
   const newErrors: FormErrors = {}; 
-  
   const validateForm = () => {
     if (!formData.type) newErrors.type = 'เลือกประเภทก่อนนะ~';
     if (!formData.category) newErrors.category = 'โปรดเลือกหมวดหมู่~'; 
@@ -51,7 +76,6 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
     if (!validateForm()) return;
 
     const addedMessage = 'เพิ่มข้อมูลสำเร็จ~';
-
     addTransaction({
       type: formData.type,
       category: formData.category,
@@ -59,16 +83,8 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
       description: formData.description,
       date: formData.date
     });
+    resetForm();
 
-    setFormData({
-      type: 'expense',
-      category: '',
-      amount: '',
-      description: '',
-      date: new Date().toISOString().split('T')[0]
-    });
-
-    // console.log(formData)
     toastModal.current?.show({
       severity: 'success',
       summary: 'แจ้งเตือน',
@@ -96,7 +112,7 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
         >
           {/* Modal Header */}
           <div className={`sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-500 p-5 sm:p-6 flex justify-between items-center`}>
-            <h3 className="text-xl sm:text-2xl font-bold text-white">เพิ่มรายการใหม่</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-white">แก้ไขรายการ</h3>
             <button
               onClick={onClose}
               className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
@@ -109,7 +125,7 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
           <div className="p-5 sm:p-6">
             <div className="space-y-4 sm:space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm text-start font-semibold text-slate-700 mb-2">
                   ประเภท
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -141,7 +157,7 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
               </div>
 
               <div className='relative'>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-start text-sm font-semibold text-slate-700 mb-2">
                   หมวดหมู่
                 </label>
                 <select
@@ -161,7 +177,7 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-start text-sm font-semibold text-slate-700 mb-2">
                   จำนวนเงิน
                 </label>
                 <div className="relative">
@@ -181,7 +197,7 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm text-start font-semibold text-slate-700 mb-2">
                   วันที่
                 </label>
                 <input
@@ -194,7 +210,7 @@ export default function TransactionEditModal({ isOpen, onClose }: TransactionMod
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm text-start font-semibold text-slate-700 mb-2">
                   รายละเอียด
                 </label>
                 <input

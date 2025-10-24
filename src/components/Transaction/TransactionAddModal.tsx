@@ -18,6 +18,7 @@ type FormErrors = Record<string, string>;
 export default function TransactionAddModal({ isOpen, onClose }: TransactionModalProps) {
   const toastModal = useRef<Toast | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const newErrors: FormErrors = {}; 
   const { addTransaction } = useTransactions();
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
@@ -26,7 +27,15 @@ export default function TransactionAddModal({ isOpen, onClose }: TransactionModa
     description: '',
     date: new Date().toISOString().split('T')[0]
   });
-  const newErrors: FormErrors = {}; 
+
+  const resetForm = () => setFormData({
+    type: 'expense',
+    category: '',
+    amount: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+  
   
   const validateForm = () => {
     if (!formData.type) newErrors.type = 'เลือกประเภทก่อนนะ~';
@@ -59,16 +68,8 @@ export default function TransactionAddModal({ isOpen, onClose }: TransactionModa
       description: formData.description,
       date: formData.date
     });
+    resetForm();
 
-    setFormData({
-      type: 'expense',
-      category: '',
-      amount: '',
-      description: '',
-      date: new Date().toISOString().split('T')[0]
-    });
-
-    // console.log(formData)
     toastModal.current?.show({
       severity: 'success',
       summary: 'แจ้งเตือน',
@@ -155,7 +156,7 @@ export default function TransactionAddModal({ isOpen, onClose }: TransactionModa
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
-                <span className='absolute top-11 right-4 text-slate-500'>
+                <span className='absolute top-11 right-4 text-slate-500 pointer-events-none'>
                   <ChevronDown size={20} strokeWidth={3}/>
                 </span>
               </div>
