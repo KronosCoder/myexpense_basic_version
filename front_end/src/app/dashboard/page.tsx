@@ -1,13 +1,13 @@
 import React from 'react';
 import { TransactionProvider } from '@/contexts/TransactionContext';
-import RootLayout from '../layouts/RootLayout/RootLayout';
+import RootLayout from '../../layouts/RootLayout/RootLayout';
 import HomeContent from '@/components/HomeContent/HomeContent';
 
-export default function Home() {
+export default function dashboard() {
   return (
     <RootLayout>
       <TransactionProvider>
-        <h1>Default</h1>
+        <HomeContent />
       </TransactionProvider>
     </RootLayout>
   );

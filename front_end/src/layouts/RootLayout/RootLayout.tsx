@@ -4,7 +4,7 @@ import "../../themes/globals.css";
 import "primereact/resources/themes/lara-light-blue/theme.css"; 
 import "primereact/resources/primereact.min.css";               
 import "primeicons/primeicons.css";   
-
+import { ModalProvider } from '@/contexts/ModalContext';
 interface RootLayoutProps {
     children: React.ReactNode;
 }
@@ -12,7 +12,9 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <HeroUIProvider>   
+      <ModalProvider>
         {children}
+      </ModalProvider>
     </HeroUIProvider> 
   )
 }

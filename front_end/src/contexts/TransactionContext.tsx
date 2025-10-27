@@ -29,14 +29,14 @@ interface TransactionContextType {
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
-  // mock data~
+
+  /* Mock data */
   const [transactions, setTransactions] = useState<Transaction[]>(mockData);
+
+  /* Variables */
   const date = new Date();
   const currMouth = `${date.getFullYear()}-${date.getMonth() + 1}`;
-  // console.log('date: ' + date)
-  // console.log('currMouth: ' + currMouth)
   const [selectedMonth, setSelectedMonth] = useState(currMouth);
-  const [currentEditTransaction, setEditTransaction] = useState<Transaction | null>(null);
 
   const filteredTransactions = transactions.filter(t => 
     t.date.startsWith(selectedMonth)
@@ -92,6 +92,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/* Handle */
 export function useTransactions() {
   const context = useContext(TransactionContext);
   if (context === undefined) throw new Error('useTransactions must be used within a TransactionProvider');

@@ -15,13 +15,10 @@ export default function TransactionTable({ currPage, itemsPerPage }: Transaction
   const { filteredTransactions } = useTransactions();
 
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
-    // console.log('a: ', a.date)
-    // console.log('b: ', b.date)
     const dateA = new Date(a.date).getTime();
     const dateB = new Date(b.date).getTime();
     return dateB - dateA;
   });
-
 
   const startIndex = (currPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;

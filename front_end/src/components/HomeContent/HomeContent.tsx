@@ -8,15 +8,15 @@ import TransactionAddModal from '@/components/Transaction/TransactionAddModal';
 import { Plus } from 'lucide-react';
 import TransactionPagination from '../TransactionTable/pagination/TransactionPagination';
 import { useTransactions } from '@/contexts/TransactionContext';
+import { useModal } from '@/contexts/ModalContext';
 
 export default function HomeContent() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { isModalOpen, setModalOpen } = useModal();
     const [currPage, setCurrPage] = useState(1);
     const { filteredTransactions } = useTransactions();
     const itemsPerPage = 4;
     const totalPage = Math.ceil(filteredTransactions.length / itemsPerPage);
     
-
     const onNext = () => {
         if (filteredTransactions && currPage < totalPage) setCurrPage((prev) =>  prev + 1)
         console.log('Click: ', currPage)
@@ -51,7 +51,7 @@ export default function HomeContent() {
                             <MonthSelector />
                             
                             <button
-                                onMouseDown={() => setIsModalOpen(true)}
+                                onMouseDown={() => setModalOpen(true)}
                                 className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-400 text-white rounded-lg font-medium shadow-lg shadow-blue-200 hover:shadow-xl hover:scale-105 transition-all text-sm sm:text-base cursor-pointer"
                             >
                                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -70,7 +70,7 @@ export default function HomeContent() {
                 {/* Modal */}
                 <TransactionAddModal 
                     isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
+                    onClose={() => setModalOpen(false)} 
                 />
             </div>
         </div>
