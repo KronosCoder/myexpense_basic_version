@@ -101,7 +101,10 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
 
   return (
     <>
-      <Toast ref={toastModal}  position="top-center"/>
+      <Toast 
+        ref={toastModal}  
+        position="top-center"
+      />
       <div 
         className={`${isOpen ? 'pointer-events-auto z-[1] scale-100' : 'pointer-events-none opacity-0 z-[-1]'} fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all ease-in-out duration-300`}
         onMouseDown={handleClick}  

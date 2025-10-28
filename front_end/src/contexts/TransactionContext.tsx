@@ -38,12 +38,13 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const currMouth = `${date.getFullYear()}-${date.getMonth() + 1}`;
   const [selectedMonth, setSelectedMonth] = useState(currMouth);
 
+  /* Logic Sec */
   const filteredTransactions = transactions.filter(t => 
     t.date.startsWith(selectedMonth)
   );
 
   const totalIncome = filteredTransactions
-    .filter(t => t.type === 'income')
+    .filter(t => t.type === 'income')   
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = filteredTransactions

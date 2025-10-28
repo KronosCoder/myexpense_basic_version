@@ -3,7 +3,7 @@ export const mockData = [
     id: '1',
     type: 'income',
     category: 'เงินเดือน',
-    amount: 35000,
+    amount: 85000,
     description: 'เงินเดือนประจำ',
     date: '2025-10-01'
   },

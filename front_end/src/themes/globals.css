@@ -20,6 +20,14 @@ body {
   font-family: var(--font-prompt), var(--font-poppins), sans-serif;
 }
 
+.text__color {
+  color: var(--foreground);
+}
+
+.background__color {
+  background: var(--background);
+}
+
 /* Custom Transition */
 .transition-pop {
     transition: all .35s cubic-bezier(.68,-.6,.32,1.6), color .35s ease-out;
@@ -49,4 +57,17 @@ select {
 
 select::-ms-expand {
   display: none;
+}
+
+/* fixed toast css */
+.p-toast-message {
+  @apply px-4 py-3 text-sm font-medium rounded-xl;
+}
+
+.p-toast-message-content {
+  @apply flex items-center gap-3;
+}
+
+.p-toast-message-text {
+  @apply text-gray-700;
 }

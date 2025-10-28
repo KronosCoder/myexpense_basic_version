@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react';
 import TransactionPagination from '../TransactionTable/pagination/TransactionPagination';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useModal } from '@/contexts/ModalContext';
+import CustomModal from '../CustomModal/CustomModal';
 
 export default function HomeContent() {
     const { isModalOpen, setModalOpen } = useModal();
