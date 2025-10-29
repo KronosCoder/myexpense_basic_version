@@ -1,9 +1,11 @@
-import React from 'react';
+"use client";
+
+import React, { useRef } from 'react';
 import { HeroUIProvider } from '@heroui/react';
 import "primereact/resources/themes/lara-light-blue/theme.css"; 
 import "primereact/resources/primereact.min.css";               
 import "primeicons/primeicons.css";   
-import { ModalProvider } from '@/contexts/ModalContext';
+import { Toast } from 'primereact/toast';
 
 
 interface RootLayoutProps {
@@ -11,11 +13,15 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const toastModal = useRef<Toast>(null);
+  (globalThis as any).toastModal = toastModal;
   return (
     <HeroUIProvider>   
-      <ModalProvider>
-          {children}
-      </ModalProvider>
+      <Toast 
+        ref={toastModal}  
+        position="top-center"
+      />
+      {children}
     </HeroUIProvider> 
   )
 }

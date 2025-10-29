@@ -5,8 +5,8 @@ import { X, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useRef } from 'react';
 import { categories } from '@/utils/data/categories';
-import { Toast } from "primereact/toast";
 import { ChevronDown } from 'lucide-react';
+import { Toast } from 'primereact/toast';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -17,9 +17,10 @@ interface TransactionModalProps {
 type FormErrors = Record<string, string>;
 
 export default function TransactionEditModal({ isOpen, onClose, transactionID }: TransactionModalProps) {
-  const toastModal = useRef<Toast | null>(null);
+  console.log(transactionID)
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const { addTransaction, getSingleTransaction } = useTransactions();
+  const { updateTransaction, getSingleTransaction } = useTransactions();
+  const toast = (globalThis as any).toastModal as React.RefObject<Toast>;
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
     category: '',
@@ -39,18 +40,20 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
   useEffect(() => {
     if (isOpen && transactionID) {
       const transaction = getSingleTransaction(transactionID);
-      const { type, category, amount, description, date } = transaction[0];
-      setFormData({
-        type,
-        category,
-        amount: amount.toString(),
-        description,
-        date
-      })
+      if (transaction && transaction.length > 0) {
+        const { type, category, amount, description, date } = transaction[0];
+        setFormData({
+          type: type as 'income' | 'expense',
+          category,
+          amount: amount.toString(),
+          description,
+          date
+        });
+      }
     } else if (isOpen) {
       resetForm();
     }
-  },[isOpen, transactionID, getSingleTransaction]);
+  }, [isOpen, transactionID, getSingleTransaction]);
 
   const newErrors: FormErrors = {}; 
   const validateForm = () => {
@@ -60,39 +63,39 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
     if (!formData.date) newErrors.date = 'โปรดเลือกวันที่ก่อน~'; 
     if (!formData.description) newErrors.description = 'โปรดใส่รายละเอียด~'; 
     if (Object.entries(newErrors).length > 0) {
-      toastModal.current?.show({
+      toast.current?.show({
         severity: "warn",
         summary: "แจ้งเตือน!",
         detail: Object.entries(newErrors)[0][1],
         life: 2500,
       });
     }
-
     return Object.entries(newErrors).length === 0;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    const addedMessage = 'เพิ่มข้อมูลสำเร็จ~';
-    addTransaction({
-      type: formData.type,
-      category: formData.category,
-      amount: parseFloat(formData.amount),
-      description: formData.description,
-      date: formData.date
-    });
-    resetForm();
+  updateTransaction(transactionID, {
+    type: formData.type,
+    category: formData.category,
+    amount: parseFloat(formData.amount),
+    description: formData.description,
+    date: formData.date
+  });
 
-    toastModal.current?.show({
-      severity: 'success',
-      summary: 'แจ้งเตือน',
-      detail: addedMessage,
-    })
+  toast.current?.show({
+    severity: 'success',
+    summary: 'แจ้งเตือน',
+    detail: 'แก้ไขสำเร็จ~',
+  });
+
+  setTimeout(() => {
     onClose();
-  };
-
+    resetForm();
+  }, 300);
+};
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
       onClose(); 
@@ -101,10 +104,6 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
 
   return (
     <>
-      <Toast 
-        ref={toastModal}  
-        position="top-center"
-      />
       <div 
         className={`${isOpen ? 'pointer-events-auto z-[1] scale-100' : 'pointer-events-none opacity-0 z-[-1]'} fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all ease-in-out duration-300`}
         onMouseDown={handleClick}  
@@ -134,7 +133,7 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, type: 'expense', category: '' })}
+                    onMouseDown={() => setFormData({ ...formData, type: 'expense', category: '' })}
                     className={`py-3 px-4 rounded-xl font-medium transition-all cursor-pointer ${
                       formData.type === 'expense'
                         ? 'bg-rose-100 text-rose-700 ring-2 ring-rose-500'
@@ -164,13 +163,13 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
                   หมวดหมู่
                 </label>
                 <select
-                  value={formData.category}
+                  value={formData.category ?? 'Loading ...'}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer text-gray-700 !appearance-none"
                   required
                 >
                   <option value="">เลือกหมวดหมู่</option>
-                  {categories[formData.type].map(cat => (
+                  {isOpen && categories[formData.type].map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
@@ -189,7 +188,7 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
                   </span>
                   <input
                     type="number"
-                    value={formData.amount}
+                    value={formData.amount ?? 'Loading ...'}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600"
                     placeholder="0.00"
@@ -205,7 +204,7 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
                 </label>
                 <input
                   type="date"
-                  value={formData.date}
+                  value={formData.date ?? 'Loading ...'}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer text-gray-600"
                   required
@@ -218,7 +217,7 @@ export default function TransactionEditModal({ isOpen, onClose, transactionID }:
                 </label>
                 <input
                   type="text"
-                  value={formData.description}
+                  value={formData.description ?? 'Loading ...'}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600"
                   placeholder="กรอกรายละเอียด..."
