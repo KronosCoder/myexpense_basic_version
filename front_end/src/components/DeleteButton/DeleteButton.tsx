@@ -13,13 +13,18 @@ interface Props {
 export default function DeleteButton({ rowID }: Props) {
     const { deleteTransaction } = useTransactions();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const toastModal = useRef(null);
-
-const handleDelete = async () => {
+    const toast = (globalThis as any).toastModal as React.RefObject<Toast>;
+    const handleDelete = async () => {
         try {
             setIsModalOpen(false);
             setTimeout(async() => {
-             await deleteTransaction(rowID);
+                await deleteTransaction(rowID);
+                toast.current.show({
+                    severity: "success",
+                    summary: "แจ้งเตือน!",
+                    detail: "ลบข้อมูลเรียบร้อย",
+                    life: 2500,
+                })
             }, 1000);
             
         } catch (error) {
@@ -30,10 +35,6 @@ const handleDelete = async () => {
 
     return (
         <>
-           <Toast 
-                ref={toastModal}  
-                position="top-center"
-            />
             <button
                 className="cursor-pointer px-3 py-1.5 bg-rose-100 text-rose-600 rounded-lg text-sm font-medium hover:bg-rose-200 transition-colors flex items-center gap-1"
                 onClick={() => setIsModalOpen(true)} 

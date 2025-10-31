@@ -16,12 +16,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const toastModal = useRef<Toast>(null);
   (globalThis as any).toastModal = toastModal;
   return (
-    <HeroUIProvider>   
+    <>   
       <Toast 
         ref={toastModal}  
         position="top-center"
       />
       {children}
-    </HeroUIProvider> 
+    </> 
   )
 }

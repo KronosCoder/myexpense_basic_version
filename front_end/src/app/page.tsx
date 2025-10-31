@@ -1,14 +1,5 @@
-import React from 'react';
-import { TransactionProvider } from '@/contexts/TransactionContext';
-import RootLayout from '../layouts/RootLayout/RootLayout';
-import HomeContent from '@/components/HomeContent/HomeContent';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <RootLayout>
-      <TransactionProvider>
-        <h1>Default</h1>
-      </TransactionProvider>
-    </RootLayout>
-  );
+  return redirect('/auth/login');
 }
