@@ -1,12 +1,14 @@
 import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
+
 const prisma = new PrismaClient();
 
 async function main() {
   try {
     await prisma.$connect();
-    console.log('✅ DB connected');
-  } catch (e) {
-    console.error('❌ Cannot connect:', e);
+    console.log('✅ Connected to DB');
+  } catch (err) {
+    console.error('❌ Failed to connect:', err);
   } finally {
     await prisma.$disconnect();
   }
