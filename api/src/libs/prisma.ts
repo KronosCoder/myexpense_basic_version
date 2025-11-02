@@ -1,3 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 
-export const prisma = new PrismaClient();
+/* ตั้ง __db__ เพราะให้รู้ว่าไม่ควรใช้โดยตรง */
+declare global {
+    var __db__ : PrismaClient | undefined;
+}
+
+export const prisma = global.__db__ ?? new PrismaClient();
