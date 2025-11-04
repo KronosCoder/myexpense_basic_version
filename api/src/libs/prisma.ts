@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/client";
 
 /* ตั้ง __db__ เพราะให้รู้ว่าไม่ควรใช้โดยตรง */
 declare global {

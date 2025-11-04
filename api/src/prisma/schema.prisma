@@ -1,45 +1,71 @@
-datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
-}   
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated"
 }
 
-enum TransactionType {
-    INCOME
-    EXPENSE
-}
-
-model User {
-    id          String        @id @default(uuid())
-    email       String        @unique
-    name        String?
-    password    String
-    createdAt   DateTime      @default(now())
-    transaction Transaction[]
-}
-
-model Transaction {
-    id          String          @id @default(cuid())
-    user        User            @relation(fields: [userId], references: [id])
-    userId      String
-    title       String
-    description String?         @db.Text
-    amount      Float
-    type        TransactionType
-    category    Category        @relation(fields: [categoryId], references: [id])
-    categoryId  String
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Category {
-    id           String        @id @default(cuid())
-    name         String        @unique
-    createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt
-    transactions Transaction[]
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String        @unique
+  createdAt    DateTime?     @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime?     @default(now()) @db.Timestamptz(6)
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?
+  amount      Float
+  type        TransactionType
+  userId      String?         @db.Uuid
+  categoryId  String?         @db.Uuid
+  createdAt   DateTime?       @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?       @default(now()) @db.Timestamptz(6)
+  categories  Category?       @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  users       User?           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([categoryId], map: "idx_transactions_categoryid")
+  @@index([type], map: "idx_transactions_type")
+  @@index([userId], map: "idx_transactions_userid")
+  @@map("transactions")
+}
+
+model User {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String             @unique
+  password         String
+  name             String?
+  createdAt        DateTime?          @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime?          @default(now()) @db.Timestamptz(6)
+  transactions     Transaction[]
+  UserRefreshToken UserRefreshToken[]
+
+  @@map("users")
+}
+
+model UserRefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  isRevoked Boolean  @default(false)
+  expiredAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([id], map: "idx_user_refresh_token_id")
+  @@index([userId], map: "idx_user_refresh_token_user_id")
+  @@map("userResfreshToken")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
 }

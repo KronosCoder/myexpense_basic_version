@@ -22,12 +22,12 @@ export async function pagination<T>(
     const page = Math.max(1, options.page ?? 1);    
     const limit = Math.min(10, Math.max(1, options.limit ?? 4));
 
-    /* เก็บค่าที่จะ skip ไปเช่นหน้า 2 => (2-1) x 4 = 4 ก็จะข้าม 4 row แรกไป */
+    // Skip = (page - 1) * limit
+    // ตัวอย่าง: page=2, limit=4 -> (2-1)*4 = 4 -> ข้าม 4 แถว, เริ่มที่ index 4
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-        /* ข้อมูลที่ไป query และเงื่อนไขหากมี */
-        model.findMany.findMany({
+        model.findMany({
             where: options.where,
             orderBy: options.orderBy,
             include: options.include,
@@ -35,7 +35,6 @@ export async function pagination<T>(
             skip: skip,
             take: limit,
         }),
-        /* จำนวน row ที่ถูกดึงมา */
         model.count({
             where: options.where,
         })
