@@ -1,4 +1,5 @@
 import { PrismaClient } from "../generated/client";
+import dotenv from 'dotenv';
 
 /* ตั้ง __db__ เพราะให้รู้ว่าไม่ควรใช้โดยตรง */
 declare global {

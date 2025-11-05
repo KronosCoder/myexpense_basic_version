@@ -41,3 +41,7 @@ pnpm-debug.log*
 # Optional: bundlers
 /.turbo
 /.parcel-cac
+
+/src/generated/prisma
+
+/src/generated/prisma
