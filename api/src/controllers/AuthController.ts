@@ -7,6 +7,19 @@ export default class AuthController {
         try {
             const registerData = await ctx.req.json<RegisterInput>();
             console.log(registerData)
+
+            if (!registerData.email || !registerData.password) {
+                return ctx.json({   
+                    status_code: 400,
+                    message: "Required email and password !",
+                }, 400);
+            } else if (registerData.password !== registerData.confirmPassword) {
+                return ctx.json({
+                    status_code: 400,
+                    message: "Password doesn't match !",
+                }, 400);
+            }
+
             const user = await AuthServices.regitser(registerData);
             return ctx.json({
                 status_code: 200,

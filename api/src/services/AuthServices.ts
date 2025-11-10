@@ -49,7 +49,6 @@ class AuthServices {
     async regitser (data: RegisterInput): Promise<User> {
         const existEmail = await this.findUserWithEmail(data.email);
         if (existEmail) throw new Error('Email aldready exists !');
-    
         const salt = 10;
         const hashedPassword: string = await bcrypt.hash(data.password, salt);
         const user = await prisma.user.create({
