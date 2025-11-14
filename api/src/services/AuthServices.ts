@@ -11,7 +11,8 @@ class AuthServices {
     constructor () {
         this.accessToken = process.env.JWT_ACCESS_SECRET as string ?? '';
         this.refreshToken = process.env.JWT_REFRESH_SECRET as string ?? '';
-        if (this.refreshToken || this.accessToken) throw new Error('Missing jwt secert in env !');
+        console.log('SECRET: ' + this.accessToken)
+        console.log('SECRET: ' + this.refreshToken)
     }
 
     /* -------------------------------- Token -------------------------------- */
@@ -42,7 +43,33 @@ class AuthServices {
         return new Date(Date.now() * day * 24 * 60 *60 * 1000);
     }
 
+    async revokeRefreshToken (userId: string) {
+        const oldToken = await prisma.userRefreshToken.findMany({
+            where: { userId: userId }
+        });
+        return await prisma.userRefreshToken.updateMany({
+            where: { id: { in: oldToken.map(t => t.id) } },
+            data: { isRevoked: true }
+        });
+    }
+
     async storeRefreshToken (email: string) {
+        const user = await this.findUserWithEmail(email);
+        if (!user) throw new Error('Not found user');
+
+        const ok = this.revokeRefreshToken(user.id);
+        if (!ok) throw new Error('An occurred error revoking refresh token.');
+
+        const expiredDate = 7;
+        const newTokenId = crypto.randomUUID();
+        const refreshToken = this.generateRefreshToken(user.id, newTokenId);
+        return await prisma.userRefreshToken.create({
+            data: {
+                userId: user.id,
+                token: refreshToken,
+                expiredAt: this.tokenExpiredAt(expiredDate),
+            }
+        });
     }
 
     /* ---------------------------- Register / Login ---------------------------- */
@@ -59,13 +86,18 @@ class AuthServices {
     }   
 
     async login (data: LoginInput) {
-        if (!data.email || data.email === '') throw new Error('Missing credential !');
+        if (!data.email || data.email === '') throw new Error('Missing credential!');
         const user = await this.findUserWithEmail(data.email);
         if (!user) throw new Error('Invalid credentials');
 
         const correctPassword = await bcrypt.compare(data.password, user.password);
         if (!correctPassword) throw new Error('Invalid password');
+        this.storeRefreshToken(user.id);
+
+        const accessTokenId = crypto.randomUUID();
+        const accessToken = this.generateAccessToken(user.id, accessTokenId);
         
+        return { accessToken };
     }
 
     async findUserWithEmail (email: string): Promise<User | null> {

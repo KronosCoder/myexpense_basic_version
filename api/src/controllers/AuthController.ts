@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { RegisterInput } from "../types/auth";
+import { RegisterInput, LoginInput } from "../types/auth";
 import AuthServices from "../services/AuthServices";
 
 export default class AuthController {
@@ -31,6 +31,34 @@ export default class AuthController {
             return ctx.json({
                 status_code: 500,
                 error: err.message
+            }, 500);
+        }
+    }
+
+    async login (ctx: Context) {
+        try {
+            const loginData = await ctx.req.json<LoginInput>();
+
+            if (!loginData.email || !loginData.password) {
+                return ctx.json({   
+                    status_code: 400,
+                    message: "Required email and password !",
+                }, 400);
+            } 
+
+            const response = await AuthServices.login(loginData);
+            return ctx.json({
+                status_code: 200,
+                data: { 
+                    accessToken: response.accessToken,
+                },
+            })
+
+        } catch (err: any) {
+            process.env.NODE_ENV === 'development' ? console.log(err.message) : undefined;
+            return ctx.json({
+                status_code: 500,
+                error: err.message,
             }, 500);
         }
     }
