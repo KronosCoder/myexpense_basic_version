@@ -3,6 +3,7 @@ import jwt, { sign, verify } from "jsonwebtoken";
 import { LoginInput, RegisterInput } from "../types/auth";
 import bcrypt from "bcryptjs";
 import { User } from "../generated/client";
+import { Result } from "../libs/result";
 
 class AuthServices {
     private accessToken: string;
@@ -72,6 +73,36 @@ class AuthServices {
         });
     }
 
+    async refreshAccessToken (userId: string, refreshToken: string): Promise<string | {}> {
+        // เช็คว่าฝั่ง client ส่ง Parametter มาครบไหม
+        if (!userId || !refreshToken) return Result.badRequest('Missing userId or refreshToken!');
+        
+        // เช็คว่า RefreshToken หมดอายุหรือยังถ้าหมดก็ลบทิ้งไปเลยและป้องกัน Token ปลอม
+        const payload = this.verifyToken<{ 
+            userId: string,
+            refreshToken: string 
+        }>(refreshToken, 'refresh');
+
+        if (!payload) {
+            await prisma.userRefreshToken.deleteMany({ 
+                where: { token: refreshToken }
+            });
+            return Result.unauthorize('Refresh token is expired or Invalid!');
+        }
+
+        // ดึง Token ใน DB มาเช็คต่ออีกชั้นว่า Revoke หรือยัง (ป้องกันอีกชั้น)
+        const dbToken = await prisma.userRefreshToken.findUnique({
+            where: { token: refreshToken },
+        });
+
+        if (!dbToken || dbToken.isRevoked || dbToken.expiredAt < new Date()) {
+            return Result.unauthorize('Token revoked or expired');
+        }
+
+        const newAccessToken = this.generateAccessToken(payload.userId, crypto.randomUUID());
+        return Result.success({ accessToken: newAccessToken });
+    } 
+
     /* ---------------------------- Register / Login ---------------------------- */
     async regitser (data: RegisterInput): Promise<User> {
         const existEmail = await this.findUserWithEmail(data.email);
@@ -88,21 +119,21 @@ class AuthServices {
     async login (data: LoginInput) {
         if (!data.email || data.email === '') throw new Error('Missing credential!');
         const user = await this.findUserWithEmail(data.email);
-        if (!user) throw new Error('Invalid credentials');
+        if (!user) return Result.notFound("Not found user.");
 
         const correctPassword = await bcrypt.compare(data.password, user.password);
-        if (!correctPassword) throw new Error('Invalid password');
+        if (!correctPassword) return Result.error("Invalid password.");
         this.storeRefreshToken(user.id);
 
         const accessTokenId = crypto.randomUUID();
         const accessToken = this.generateAccessToken(user.id, accessTokenId);
         
-        return { accessToken };
+        return Result.success({ accessToken }, "Login successfully.");
     }
 
     async findUserWithEmail (email: string): Promise<User | null> {
         return await prisma.user.findUnique({ 
-            where: { email: email }
+            where: { email }
         });
     }
 }

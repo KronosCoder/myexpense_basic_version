@@ -1,6 +1,8 @@
 import { Context } from "hono";
 import { RegisterInput, LoginInput } from "../types/auth";
 import AuthServices from "../services/AuthServices";
+import { Result } from "../libs/result";
+import { ApiResponse } from "../libs/result";
 
 export default class AuthController {
     async register (ctx: Context) {
@@ -38,21 +40,12 @@ export default class AuthController {
     async login (ctx: Context) {
         try {
             const loginData = await ctx.req.json<LoginInput>();
-
             if (!loginData.email || !loginData.password) {
-                return ctx.json({   
-                    status_code: 400,
-                    message: "Required email and password !",
-                }, 400);
+                return ctx.json(Result.badRequest("Missing email or password!"), 400);
             } 
 
-            const response = await AuthServices.login(loginData);
-            return ctx.json({
-                status_code: 200,
-                data: { 
-                    accessToken: response.accessToken,
-                },
-            })
+            const result = await AuthServices.login(loginData);
+            return ctx.json(result, 200);
 
         } catch (err: any) {
             process.env.NODE_ENV === 'development' ? console.log(err.message) : undefined;
