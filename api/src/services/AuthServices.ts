@@ -3,11 +3,11 @@ import jwt, { sign, verify } from "jsonwebtoken";
 import { LoginInput, RegisterInput } from "../types/auth";
 import bcrypt from "bcryptjs";
 import { User } from "../generated/client";
-import { Result } from "../libs/result";
+import { ApiResponse } from "../types/api_response";
 
 class AuthServices {
-    private accessToken: string;
-    private refreshToken: string;
+    private readonly accessToken: string;
+    private readonly refreshToken: string;
 
     constructor () {
         this.accessToken = process.env.JWT_ACCESS_SECRET as string ?? '';
@@ -75,7 +75,11 @@ class AuthServices {
 
     async refreshAccessToken (userId: string, refreshToken: string): Promise<string | {}> {
         // เช็คว่าฝั่ง client ส่ง Parametter มาครบไหม
-        if (!userId || !refreshToken) return Result.badRequest('Missing userId or refreshToken!');
+        if (!userId || !refreshToken) return  { 
+            success: false,
+            status_code: 400,
+            message: "Missing credentials!",
+         };
         
         // เช็คว่า RefreshToken หมดอายุหรือยังถ้าหมดก็ลบทิ้งไปเลยและป้องกัน Token ปลอม
         const payload = this.verifyToken<{ 
@@ -87,7 +91,11 @@ class AuthServices {
             await prisma.userRefreshToken.deleteMany({ 
                 where: { token: refreshToken }
             });
-            return Result.unauthorize('Refresh token is expired or Invalid!');
+            return  { 
+                success: false,
+                status_code: 401,
+                message: "Token is expired or invalid!",
+            }; 
         }
 
         // ดึง Token ใน DB มาเช็คต่ออีกชั้นว่า Revoke หรือยัง (ป้องกันอีกชั้น)
@@ -96,15 +104,19 @@ class AuthServices {
         });
 
         if (!dbToken || dbToken.isRevoked || dbToken.expiredAt < new Date()) {
-            return Result.unauthorize('Token revoked or expired');
+            return  { 
+                success: false,
+                status_code: 401,
+                message: "Token revoked or expired!",
+            };
         }
 
         const newAccessToken = this.generateAccessToken(payload.userId, crypto.randomUUID());
-        return Result.success({ accessToken: newAccessToken });
+        return { accessToken: newAccessToken };
     } 
 
     /* ---------------------------- Register / Login ---------------------------- */
-    async regitser (data: RegisterInput): Promise<User> {
+    async regitser (data: RegisterInput): Promise<ApiResponse> {
         const existEmail = await this.findUserWithEmail(data.email);
         if (existEmail) throw new Error('Email aldready exists !');
         const salt = 10;
@@ -112,23 +124,45 @@ class AuthServices {
         const user = await prisma.user.create({
             data: { email: data.email, password: hashedPassword },
         });
-        
-        return user;
+    
+        return {
+            success: true,
+            status_code: 200,
+            message: "Register successfully",
+            data: { user }
+        };
     }   
 
-    async login (data: LoginInput) {
+    async login (data: LoginInput): Promise<ApiResponse> {
         if (!data.email || data.email === '') throw new Error('Missing credential!');
         const user = await this.findUserWithEmail(data.email);
-        if (!user) return Result.notFound("Not found user.");
+        if (!user) return { 
+            success: false,
+            status_code: 404,
+            message: "Not found user",
+         };
 
         const correctPassword = await bcrypt.compare(data.password, user.password);
-        if (!correctPassword) return Result.error("Invalid password.");
+        if (!correctPassword) return { 
+            success: false,
+            status_code: 400,
+            message: "Invalid password",
+         };
+
         this.storeRefreshToken(user.id);
 
         const accessTokenId = crypto.randomUUID();
         const accessToken = this.generateAccessToken(user.id, accessTokenId);
         
-        return Result.success({ accessToken }, "Login successfully.");
+        return { 
+            success: true,
+            status_code: 200,
+            message: "Login successfully",
+            data: {
+                userId: user.id,
+                accessToken: accessToken,
+            }
+         };
     }
 
     async findUserWithEmail (email: string): Promise<User | null> {

@@ -24,7 +24,8 @@
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "uuidv4": "^6.2.13"
+    "uuidv4": "^6.2.13",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

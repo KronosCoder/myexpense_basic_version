@@ -5,7 +5,6 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { prettyJSON } from "hono/pretty-json";
 import { serve } from "@hono/node-server";
 
-console.log("JWT_ACCESS_SECRET:", process.env.JWT_ACCESS_SECRET ? "OK" : "MISSING");
 const app = new Hono();
 
 /* ---------- Use --------- */
