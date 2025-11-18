@@ -1,7 +1,9 @@
 import { Context } from "hono";
+import { setCookie } from "hono/cookie";
 import AuthServices from "../services/AuthServices";
 import { z } from "zod";
 import { errorHandler } from "../libs/errorHandler";
+import strict from "assert/strict";
 
 const registerSchema = z.object({
     email: z.string().email({ message: "Invalid email pattern" }),
@@ -34,6 +36,21 @@ export default class AuthController {
             const raw: { email: string, password: string } = await ctx.req.json();
             const data = LoginSchema.parse(raw);
             const response = await AuthServices.login(data);
+
+            if (response.success && response.status_code === 200) {
+                setCookie(ctx, "refresh_token", response.data.refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
+                    path: "/",
+                    maxAge: 7 *24 * 60 * 60,
+                });
+                const { refreshToken, ...safeData } = response.data;
+                // console.log(refreshToken);
+                // console.log(safeData);
+                response.data = safeData;
+            }
+
             return ctx.json(response, (response as any).status_code);
         } catch (err: any) {
             return ctx.json(errorHandler(err), (errorHandler(err) as any).status_code)

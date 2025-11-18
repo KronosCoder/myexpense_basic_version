@@ -108,11 +108,25 @@ class AuthServices {
         const newAccessToken = this.generateAccessToken(payload.userId, crypto.randomUUID());
         return { accessToken: newAccessToken };
     } 
+    
 
-    /* ---------------------------- Register / Login ---------------------------- */
+    /* ---------------------------- Utils ---------------------------- */
+
+    async findUserWithEmail (email: string): Promise<User | null> {
+        return await prisma.user.findUnique({ 
+            where: { email }
+        });
+    }
+
+    /* ---------------------------- Main ---------------------------- */
     async regitser (data: RegisterInput): Promise<ApiResponse> {
         const existEmail = await this.findUserWithEmail(data.email);
-        if (existEmail) throw new Error('Email aldready exists !');
+        if (existEmail) return {
+            success: false,
+            status_code: 409,
+            message: `Duplicate user: ${data.email} has already exist`,
+        };
+
         const salt = 10;
         const hashedPassword: string = await bcrypt.hash(data.password, salt);
         const user = await prisma.user.create({
@@ -128,7 +142,6 @@ class AuthServices {
     }   
 
     async login (data: LoginInput): Promise<ApiResponse> {
-        if (!data.email || data.email === '') throw new Error('Missing credential!');
         const user = await this.findUserWithEmail(data.email);
         if (!user) return { 
             success: false,
@@ -144,10 +157,9 @@ class AuthServices {
          };
 
         const refreshToken = await this.storeRefreshToken(user.email);
-
         const accessTokenId = crypto.randomUUID();
         const accessToken = this.generateAccessToken(user.id, accessTokenId);
-        
+         
         return { 
             success: true,
             status_code: 200,
@@ -158,12 +170,6 @@ class AuthServices {
                 refreshToken,
             }
          };
-    }
-
-    async findUserWithEmail (email: string): Promise<User | null> {
-        return await prisma.user.findUnique({ 
-            where: { email }
-        });
     }
 }
 
