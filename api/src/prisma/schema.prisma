@@ -55,6 +55,7 @@ model UserRefreshToken {
   userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id])
   token     String   @unique
+  jti       String   @unique
   isRevoked Boolean  @default(false)
   expiredAt DateTime @db.Timestamptz(6)
   createdAt DateTime @default(now())
@@ -62,7 +63,7 @@ model UserRefreshToken {
 
   @@index([id], map: "idx_user_refresh_token_id")
   @@index([userId], map: "idx_user_refresh_token_user_id")
-  @@map("userResfreshToken")
+  @@map("user_refresh_tokens")
 }
 
 enum TransactionType {

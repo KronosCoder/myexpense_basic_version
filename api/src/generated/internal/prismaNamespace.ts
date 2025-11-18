@@ -789,6 +789,7 @@ export const UserRefreshTokenScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   token: 'token',
+  jti: 'jti',
   isRevoked: 'isRevoked',
   expiredAt: 'expiredAt',
   createdAt: 'createdAt',

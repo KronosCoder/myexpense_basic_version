@@ -25,7 +25,7 @@ class AuthServices {
     }
     
     generateRefreshToken (userId: string, tokenId: string): string {
-        return sign({ userId, tokenId }, this.refreshToken, {
+        return sign({ userId, jti: tokenId }, this.refreshToken, {
             expiresIn: '7d',
             algorithm: 'HS256',
         });
@@ -41,7 +41,7 @@ class AuthServices {
     }
 
     tokenExpiredAt (day: number): Date {
-        return new Date(Date.now() * day * 24 * 60 *60 * 1000);
+        return new Date(Date.now() + day * 24 * 60 *60 * 1000);
     }
 
     async revokeRefreshToken (userId: string) {
@@ -58,9 +58,9 @@ class AuthServices {
         const user = await this.findUserWithEmail(email);
         if (!user) throw new Error('Not found user');
 
-        const ok = this.revokeRefreshToken(user.id);
-        if (!ok) throw new Error('An occurred error revoking refresh token.');
+        await this.revokeRefreshToken(user.id);
 
+        const jti = crypto.randomUUID(); 
         const expiredDate = 7;
         const newTokenId = crypto.randomUUID();
         const refreshToken = this.generateRefreshToken(user.id, newTokenId);
@@ -68,24 +68,18 @@ class AuthServices {
             data: {
                 userId: user.id,
                 token: refreshToken,
+                jti,
                 expiredAt: this.tokenExpiredAt(expiredDate),
             }
         });
     }
 
-    async refreshAccessToken (userId: string, refreshToken: string): Promise<string | {}> {
-        // เช็คว่าฝั่ง client ส่ง Parametter มาครบไหม
-        if (!userId || !refreshToken) return  { 
-            success: false,
-            status_code: 400,
-            message: "Missing credentials!",
-         };
-        
+    async refreshAccessToken (refreshToken: string): Promise<any> {
         // เช็คว่า RefreshToken หมดอายุหรือยังถ้าหมดก็ลบทิ้งไปเลยและป้องกัน Token ปลอม
         const payload = this.verifyToken<{ 
             userId: string,
-            refreshToken: string 
-        }>(refreshToken, 'refresh');
+            jti: string, 
+        }>(refreshToken, 'refresh');    
 
         if (!payload) {
             await prisma.userRefreshToken.deleteMany({ 
@@ -94,13 +88,13 @@ class AuthServices {
             return  { 
                 success: false,
                 status_code: 401,
-                message: "Token is expired or invalid!",
+                message: "Token expired or invalid!",
             }; 
         }
 
         // ดึง Token ใน DB มาเช็คต่ออีกชั้นว่า Revoke หรือยัง (ป้องกันอีกชั้น)
         const dbToken = await prisma.userRefreshToken.findUnique({
-            where: { token: refreshToken },
+            where: { jti: payload.jti },
         });
 
         if (!dbToken || dbToken.isRevoked || dbToken.expiredAt < new Date()) {
@@ -149,7 +143,7 @@ class AuthServices {
             message: "Invalid password",
          };
 
-        this.storeRefreshToken(user.id);
+        const refreshToken = await this.storeRefreshToken(user.email);
 
         const accessTokenId = crypto.randomUUID();
         const accessToken = this.generateAccessToken(user.id, accessTokenId);
@@ -160,7 +154,8 @@ class AuthServices {
             message: "Login successfully",
             data: {
                 userId: user.id,
-                accessToken: accessToken,
+                accessToken,
+                refreshToken,
             }
          };
     }

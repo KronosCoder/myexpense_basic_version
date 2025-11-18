@@ -25,7 +25,7 @@ export default class AuthController {
             const response = await AuthServices.regitser(data);
             return ctx.json(response, (response as any).status_code);
         } catch (err: any) {
-            errorHandler(err);
+            return ctx.json(errorHandler(err), (errorHandler(err) as any).status_code)
         }
     }
 
