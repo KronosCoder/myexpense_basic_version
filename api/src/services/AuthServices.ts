@@ -1,4 +1,5 @@
 import { prisma } from "../libs/prisma";
+import crypto from "crypto";
 import jwt, { sign, verify } from "jsonwebtoken";
 import { LoginInput, RegisterInput } from "../types/auth";
 import bcrypt from "bcryptjs";
@@ -12,10 +13,10 @@ class AuthServices {
     constructor () {
         this.accessToken = process.env.JWT_ACCESS_SECRET as string ?? '';
         this.refreshToken = process.env.JWT_REFRESH_SECRET as string ?? '';
-        console.log('SECRET: ' + this.accessToken)
-        console.log('SECRET: ' + this.refreshToken)
+        console.log('SECRET ACCESS: ' + this.accessToken);
+        console.log('SECRET REFRESH: ' + this.refreshToken);
     }
-
+    
     /* -------------------------------- Token -------------------------------- */
     generateAccessToken (userId: string, tokenId: string): string {
         return sign({ userId, tokenId }, this.accessToken, {
@@ -41,7 +42,8 @@ class AuthServices {
     }
 
     tokenExpiredAt (day: number): Date {
-        return new Date(Date.now() + day * 24 * 60 *60 * 1000);
+        const msPerDay = 84_400_000;
+        return new Date(Date.now() + day * msPerDay);
     }
 
     async revokeRefreshToken (userId: string) {
@@ -62,8 +64,7 @@ class AuthServices {
 
         const jti = crypto.randomUUID(); 
         const expiredDate = 7;
-        const newTokenId = crypto.randomUUID();
-        const refreshToken = this.generateRefreshToken(user.id, newTokenId);
+        const refreshToken = this.generateRefreshToken(user.id, jti);
         return await prisma.userRefreshToken.create({
             data: {
                 userId: user.id,

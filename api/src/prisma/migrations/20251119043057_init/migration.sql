@@ -31,7 +31,6 @@ CREATE TABLE "users" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "name" TEXT,
     "createdAt" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
@@ -39,16 +38,17 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
-CREATE TABLE "userResfreshToken" (
+CREATE TABLE "user_refresh_tokens" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "userId" UUID NOT NULL,
     "token" TEXT NOT NULL,
+    "jti" TEXT NOT NULL,
     "isRevoked" BOOLEAN NOT NULL DEFAULT false,
     "expiredAt" TIMESTAMPTZ(6) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "userResfreshToken_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_refresh_tokens_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -67,13 +67,16 @@ CREATE INDEX "idx_transactions_userid" ON "transactions"("userId");
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "userResfreshToken_token_key" ON "userResfreshToken"("token");
+CREATE UNIQUE INDEX "user_refresh_tokens_token_key" ON "user_refresh_tokens"("token");
 
 -- CreateIndex
-CREATE INDEX "idx_user_refresh_token_id" ON "userResfreshToken"("id");
+CREATE UNIQUE INDEX "user_refresh_tokens_jti_key" ON "user_refresh_tokens"("jti");
 
 -- CreateIndex
-CREATE INDEX "idx_user_refresh_token_user_id" ON "userResfreshToken"("userId");
+CREATE INDEX "idx_user_refresh_token_id" ON "user_refresh_tokens"("id");
+
+-- CreateIndex
+CREATE INDEX "idx_user_refresh_token_user_id" ON "user_refresh_tokens"("userId");
 
 -- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "categories"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -82,4 +85,4 @@ ALTER TABLE "transactions" ADD CONSTRAINT "transactions_categoryId_fkey" FOREIGN
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "userResfreshToken" ADD CONSTRAINT "userResfreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "user_refresh_tokens" ADD CONSTRAINT "user_refresh_tokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

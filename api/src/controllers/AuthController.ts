@@ -3,7 +3,6 @@ import { setCookie } from "hono/cookie";
 import AuthServices from "../services/AuthServices";
 import { z } from "zod";
 import { errorHandler } from "../libs/errorHandler";
-import strict from "assert/strict";
 
 const registerSchema = z.object({
     email: z.string().email({ message: "Invalid email pattern" }),
@@ -20,8 +19,10 @@ const LoginSchema = z.object({
 });
 
 export default class AuthController {
-    async register (ctx: Context) {
+    static async register (ctx: Context) {
         try {
+            const datas = await (ctx.req.json)
+            console.log(datas)
             const raw: { email: string, password: string, confirmPassword: string } = await ctx.req.json();
             const data = registerSchema.parse(raw);
             const response = await AuthServices.regitser(data);
@@ -31,7 +32,7 @@ export default class AuthController {
         }
     }
 
-    async login (ctx: Context) {
+    static async login (ctx: Context) {
         try {
             const raw: { email: string, password: string } = await ctx.req.json();
             const data = LoginSchema.parse(raw);

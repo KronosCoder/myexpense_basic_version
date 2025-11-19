@@ -1,20 +1,38 @@
 "use client";
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User, Wallet } from "lucide-react";
-import Link from "next/link";
+import axios from "axios";
 
-export default function RegisterPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
+interface RegisterPageProps {
+  onSwitch: () => void;
+}
+type formDataType = {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export default function RegisterPage({ onSwitch }: RegisterPageProps) {
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [formData, setFormData] = useState<formDataType>({
     email: "",
     password: "",
     confirmPassword: "",
   });
 
-  const handleSubmit = () => {
-    console.log("Register submitted:", formData);
-    alert("Registration successful!");
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const endPoint = `http://127.0.0.1:45176/auth/register`;
+      const response = await axios.post(endPoint, formData);
+      console.log(response.data)
+    } catch (err: any) {
+        const response = err.response?.data;
+        console.log(response);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,24 +63,6 @@ export default function RegisterPage() {
 
           {/* form */}
           <div className="p-8 space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 block">ชื่อ</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-indigo-400" />
-                </div>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 bg-gray-50 focus:bg-white"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 block">อีเมล</label>
               <div className="relative">
@@ -124,19 +124,49 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 cursor-pointer"
-            >
-              สร้างบัญชีเลย
-            </button>
+            {!isLoading ? (
+              <button
+                onClick={handleSubmit}
+                className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 cursor-pointer"
+              >
+                สร้างบัญชีเลย
+              </button>
+            ):(
+              <button
+                disabled={true}
+                className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg cursor-not-allowed flex justify-center gap-2"
+              >
+                <svg className="h-6 w-6 animate-spin" viewBox="0 0 100 100">
+                  <circle
+                    fill="none"
+                    strokeWidth="10"
+                    className="stroke-current opacity-40"
+                    cx="50"
+                    cy="50"
+                    r="40"
+                  />
+                  <circle
+                    fill="none"
+                    strokeWidth="10"
+                    className="stroke-current"
+                    strokeDasharray="250"
+                    strokeDashoffset="210"
+                    cx="50"
+                    cy="50"
+                    r="40"
+                  />
+                </svg>
+
+                กำลังสร้างบัญชี . . .
+              </button>
+            )}
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 มีบัญชีอยู่แล้ว?{" "}
-                <Link href={'/auth/login'} className="text-indigo-600 hover:text-indigo-800 hover:underline font-semibold transition">
+                <button onMouseDown={onSwitch} className="text-indigo-600 hover:text-indigo-800 hover:underline font-semibold transition">
                   เข้าสู่ระบบ
-                </Link>
+                </button>
               </p>
             </div>
           </div>

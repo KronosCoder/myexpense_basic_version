@@ -3,7 +3,11 @@ import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, Wallet } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginPage() {
+interface LoginPageProps {
+  onSwitch: () => void;
+}
+
+export default function LoginPage({ onSwitch }: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
 
@@ -106,9 +110,9 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 ยังไม่มีบัญชี?{" "}
-                <Link href={'/auth/register'} className="text-indigo-600 hover:underline hover:text-indigo-800 font-semibold transition">
+                <button onMouseDown={onSwitch} className="text-indigo-600 hover:underline hover:text-indigo-800 font-semibold transition">
                   ลงทะเบียนเลย!
-                </Link>
+                </button>
               </p>
             </div>
           </div>

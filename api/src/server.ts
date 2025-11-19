@@ -4,6 +4,8 @@ import { logger } from 'hono/logger'
 import { errorHandler } from "./middlewares/errorHandler";
 import { prettyJSON } from "hono/pretty-json";
 import { serve } from "@hono/node-server";
+import { cors } from "hono/cors";
+
 
 const app = new Hono();
 
@@ -11,6 +13,7 @@ const app = new Hono();
 app.use("*", logger());
 app.use("*", errorHandler);
 app.use("*", prettyJSON());
+app.use("*", cors());
 
 import AuthRouter from "./routes/AuthRouter";
 

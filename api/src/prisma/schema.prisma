@@ -41,7 +41,6 @@ model User {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email            String             @unique
   password         String
-  name             String?
   createdAt        DateTime?          @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime?          @default(now()) @db.Timestamptz(6)
   transactions     Transaction[]
