@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, Wallet } from "lucide-react";
 import Link from "next/link";
 
 interface LoginPageProps {
+  isCurrForm: string;
   onSwitch: () => void;
 }
 
@@ -21,14 +22,7 @@ export default function LoginPage({ onSwitch }: LoginPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4 relative">
-      {/* background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-500"></div>
-      </div>
-
+    <>
       {/* main card */}
       <div className="relative w-full max-w-md">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 shadow-2xl transform rotate-1 rounded-2xl"></div>
@@ -110,7 +104,7 @@ export default function LoginPage({ onSwitch }: LoginPageProps) {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 ยังไม่มีบัญชี?{" "}
-                <button onMouseDown={onSwitch} className="text-indigo-600 hover:underline hover:text-indigo-800 font-semibold transition">
+                <button onMouseDown={onSwitch} className="text-indigo-600 hover:underline hover:text-indigo-800 font-semibold transition cursor-pointer">
                   ลงทะเบียนเลย!
                 </button>
               </p>
@@ -118,6 +112,6 @@ export default function LoginPage({ onSwitch }: LoginPageProps) {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

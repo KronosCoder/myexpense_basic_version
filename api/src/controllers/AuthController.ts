@@ -16,7 +16,14 @@ const registerSchema = z.object({
 const LoginSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
+    isRememberMe: z.boolean(),
 });
+
+type LoginRequest = {
+    email: string;
+    password: string;
+    isRememberMe: boolean;
+}
 
 export default class AuthController {
     static async register (ctx: Context) {
@@ -34,11 +41,11 @@ export default class AuthController {
 
     static async login (ctx: Context) {
         try {
-            const raw: { email: string, password: string } = await ctx.req.json();
+            const raw: LoginRequest = await ctx.req.json();
             const data = LoginSchema.parse(raw);
             const response = await AuthServices.login(data);
 
-            if (response.success && response.status_code === 200) {
+            if (data.isRememberMe && response.success && response.status_code === 200) {
                 setCookie(ctx, "refresh_token", response.data.refreshToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === "production",
